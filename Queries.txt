@@ -1,0 +1,85 @@
+/* Question 1*/
+
+WITH Q1 AS
+  (SELECT f.title AS title,
+          cat.name AS name,
+          r.rental_id AS rent
+   FROM film AS f
+   JOIN film_category AS fcat ON f.film_id = fcat.film_id
+   JOIN category AS cat ON cat.category_id = fcat.category_id
+   JOIN inventory AS inv ON inv.film_id = f.film_id
+   JOIN rental AS r ON r.inventory_id = inv.inventory_id
+   WHERE cat.name IN ('Animation',
+                      'Children',
+                      'Classics',
+                      'Comedy',
+                      'Family',
+                      'Music') )
+SELECT title,
+       name,
+       COUNT(rent)
+FROM Q1
+GROUP BY title,
+         name
+ORDER BY name,
+         title;
+
+/* ------------------------------- */
+/* Question 2*/
+
+SELECT f.title,
+       cat.name,
+       f.rental_duration AS rent,
+       NTILE(4) OVER (
+                      ORDER BY f.rental_duration) AS standard_quartile
+FROM film AS f
+JOIN film_category AS fcat ON f.film_id = fcat.film_id
+JOIN category AS cat ON cat.category_id = fcat.category_id
+WHERE cat.name IN ('Animation',
+                   'Children',
+                   'Classics',
+                   'Comedy',
+                   'Family',
+                   'Music')
+ORDER BY rent;
+
+/* ------------------------------- */
+/* Question 3*/
+
+WITH Q3 AS
+  (SELECT f.title AS title,
+          cat.name AS name,
+          NTILE(4) OVER (
+                         ORDER BY f.rental_duration) AS standard_quartile
+   FROM film AS f
+   JOIN film_category AS fcat ON f.film_id = fcat.film_id
+   JOIN category AS cat ON cat.category_id = fcat.category_id
+   WHERE cat.name IN ('Animation',
+                      'Children',
+                      'Classics',
+                      'Comedy',
+                      'Family',
+                      'Music') )
+SELECT name,
+       standard_quartile,
+       COUNT(standard_quartile) AS COUNT
+FROM Q3
+GROUP BY name,
+         standard_quartile
+ORDER BY name,
+         standard_quartile;
+
+/* ------------------------------- */
+/* Question 4*/
+
+SELECT DATE_PART('month', r.rental_date) AS Rental_month,
+       DATE_PART('year', r.rental_date) AS Rental_year,
+       st.store_id,
+       COUNT(r.rental_id) AS Count_rentals
+FROM rental AS r
+JOIN staff AS sf ON r.staff_id = sf.staff_id
+JOIN store AS st ON st.store_id = sf.store_id
+GROUP BY Rental_month,
+         st.store_id,
+         Rental_year
+ORDER BY count_rentals DESC;
